@@ -54,8 +54,6 @@ fn main() {
                             VirtualKeyCode::S => input_state.backward = pressed,
                             VirtualKeyCode::A => input_state.left = pressed,
                             VirtualKeyCode::D => input_state.right = pressed,
-                            VirtualKeyCode::Space => input_state.up = pressed,
-                            VirtualKeyCode::LShift => input_state.down = pressed,
                             VirtualKeyCode::Escape => {
                                 if pressed {
                                     camera_focused = false;
@@ -95,8 +93,7 @@ fn main() {
                 if input_state.backward { camera.process_keyboard(CameraMovement::Backward, dt); }
                 if input_state.left { camera.process_keyboard(CameraMovement::Left, dt); }
                 if input_state.right { camera.process_keyboard(CameraMovement::Right, dt); }
-                if input_state.up { camera.process_keyboard(CameraMovement::Up, dt); }
-                if input_state.down { camera.process_keyboard(CameraMovement::Down, dt); }
+                camera.update(dt);
 
                 app.draw_frame(&window, &camera);
             }
@@ -111,6 +108,4 @@ struct InputState {
     backward: bool,
     left: bool,
     right: bool,
-    up: bool,
-    down: bool,
 }
