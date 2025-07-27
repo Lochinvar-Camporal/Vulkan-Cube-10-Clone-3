@@ -5,8 +5,6 @@ pub enum CameraMovement {
     Backward,
     Left,
     Right,
-    Up,
-    Down,
 }
 
 pub struct Camera {
@@ -15,6 +13,7 @@ pub struct Camera {
     pub pitch: f32,
     pub speed: f32,
     pub sensitivity: f32,
+    pub vertical_velocity: f32,
 }
 
 impl Camera {
@@ -25,6 +24,7 @@ impl Camera {
             pitch,
             speed: 2.5,
             sensitivity: 0.1,
+            vertical_velocity: 0.0,
         }
     }
 
@@ -39,21 +39,26 @@ impl Camera {
 
     pub fn process_keyboard(&mut self, direction: CameraMovement, dt: f32) {
         let velocity = self.speed * dt;
-        let front = self.front();
-        let right = front.cross(Vector3::unit_z()).normalize();
+        let yaw = Rad(self.yaw.to_radians());
+        let forward = Vector3::new(yaw.0.cos(), yaw.0.sin(), 0.0).normalize();
+        let right = Vector3::new(-forward.y, forward.x, 0.0);
         match direction {
-            CameraMovement::Forward => self.position += front * velocity,
-            CameraMovement::Backward => self.position -= front * velocity,
+            CameraMovement::Forward => self.position += forward * velocity,
+            CameraMovement::Backward => self.position -= forward * velocity,
             CameraMovement::Left => self.position -= right * velocity,
             CameraMovement::Right => self.position += right * velocity,
-            CameraMovement::Up => self.position += Vector3::unit_z() * velocity,
-            CameraMovement::Down => self.position -= Vector3::unit_z() * velocity,
         }
     }
 
     pub fn process_mouse(&mut self, dx: f32, dy: f32) {
         self.yaw += dx * self.sensitivity;
         self.pitch = (self.pitch + dy * self.sensitivity).clamp(-89.0, 89.0);
+    }
+
+    pub fn update(&mut self, dt: f32) {
+        const GRAVITY: f32 = -9.8;
+        self.vertical_velocity += GRAVITY * dt;
+        self.position.z += self.vertical_velocity * dt;
     }
 
     fn front(&self) -> Vector3<f32> {
